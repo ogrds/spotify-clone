@@ -23,12 +23,19 @@ function Song({ order, track }: SongProps) {
       .play({
         uris: [track.track.uri],
       })
-      .catch((err) =>
-        toast({
-          message: err.message,
-          mode: 'error',
-        })
-      )
+      .catch(({ body }) => {
+        if (body.error.reason === 'NO_ACTIVE_DEVICE') {
+          toast({
+            message: 'You need to start a song on your device',
+            mode: 'warn',
+          })
+        } else {
+          toast({
+            message: body.error.message,
+            mode: 'error',
+          })
+        }
+      })
   }
 
   return (

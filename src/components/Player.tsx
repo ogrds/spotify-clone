@@ -66,12 +66,40 @@ function Player() {
 
   const handlePlayPause = () => {
     spotifyApi.getMyCurrentPlaybackState().then((data) => {
-      if (data.body.is_playing) {
-        spotifyApi.pause()
-        setIsPlaying(false)
+      if (data?.body?.is_playing) {
+        spotifyApi
+          .pause()
+          .then(() => setIsPlaying(false))
+          .catch(({ body }) => {
+            if (body.error.reason === 'NO_ACTIVE_DEVICE') {
+              toast({
+                message: 'You need to start a song on your device',
+                mode: 'warn',
+              })
+            } else {
+              toast({
+                message: body.error.message,
+                mode: 'error',
+              })
+            }
+          })
       } else {
-        spotifyApi.play()
-        setIsPlaying(true)
+        spotifyApi
+          .play()
+          .then(() => setIsPlaying(true))
+          .catch(({ body }) => {
+            if (body.error.reason === 'NO_ACTIVE_DEVICE') {
+              toast({
+                message: 'You need to start a song on your device',
+                mode: 'warn',
+              })
+            } else {
+              toast({
+                message: body.error.message,
+                mode: 'error',
+              })
+            }
+          })
       }
     })
   }
@@ -107,7 +135,19 @@ function Player() {
 
   const debouncedAdjustVolume = useCallback(
     debounce((volume) => {
-      spotifyApi.setVolume(volume)
+      spotifyApi.setVolume(volume).catch(({ body }) => {
+        if (body.error.reason === 'NO_ACTIVE_DEVICE') {
+          toast({
+            message: 'You need to start a song on your device',
+            mode: 'warn',
+          })
+        } else {
+          toast({
+            message: body.error.message,
+            mode: 'error',
+          })
+        }
+      })
     }, 500),
     []
   )
